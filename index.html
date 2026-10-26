@@ -11,17 +11,25 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <script>document.documentElement.classList.add("js")</script>
+  <script>(function(d){d.classList.add("js");if(!matchMedia("(prefers-reduced-motion: reduce)").matches){d.classList.add("pt");setTimeout(function(){d.classList.remove("pt")},4000)}})(document.documentElement)</script>
 </head>
 <body data-page="home">
 <main id="main">
 
-  <!-- HERO: live 3D waffle -->
-  <section class="hero">
-    <canvas class="hero__canvas" data-waffle="hero" aria-hidden="true"></canvas>
+  <!-- HERO: real waffle footage (Pexels) with kinetic type -->
+  <section class="hero hero--video" id="hero">
+    <div class="hero__media" data-hero-media>
+      <video class="hero__video" autoplay muted loop playsinline preload="auto" poster="images/hero-poster.jpg"
+        data-src-sm="images/hero-waffle-640.mp4" data-src-lg="images/hero-waffle-1280.mp4" aria-hidden="true"></video>
+      <div class="hero__shade"></div>
+    </div>
+    <div class="hero__trail" aria-hidden="true"></div>
     <div class="container hero__content">
       <span class="eyebrow" data-hero-fade>Belgian waffle house · Brussels</span>
-      <h1 class="hero__title" data-hero-split style="margin-top:1.4rem">Belgian <span class="italic">warmth,</span><br>baked fresh.</h1>
+      <h1 class="hero__title" style="margin-top:1.4rem" aria-label="Belgian warmth, baked fresh.">
+        <span class="hero__line" aria-hidden="true"><span data-chars>Belgian</span> <span class="italic" data-chars>warmth,</span></span>
+        <span class="hero__line hero__line--rotate" aria-hidden="true"><span class="rotator" data-rotator="baked fresh.|poured slow.|served warm."><span data-chars>baked fresh.</span></span></span>
+      </h1>
       <div class="hero__row">
         <div class="hero__meta" data-hero-fade>
           <div><b>Est. 2016</b>Rue des Bouchers</div>
@@ -34,7 +42,12 @@
         </div>
       </div>
     </div>
-    <div class="scroll-cue">Scroll</div>
+    <a href="#philosophy" class="hero__badge" aria-label="Scroll to explore">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><defs><path id="badgePath" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs>
+        <text><textPath href="#badgePath">SCROLL · TASTE · EXPLORE · SCROLL · TASTE · EXPLORE · </textPath></text></svg>
+      <span class="hero__badge-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+    </a>
+    <div class="hero__note" data-hero-fade><span class="hero__dot"></span>Fresh off the iron, every morning</div>
   </section>
 
   <div class="marquee" aria-hidden="true">
@@ -45,7 +58,7 @@
   </div>
 
   <!-- MANIFESTO -->
-  <section class="section section--cream">
+  <section class="section section--cream" id="philosophy">
     <div class="container manifesto">
       <div>
         <span class="eyebrow">Our philosophy</span>
@@ -129,12 +142,10 @@
   </section>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 <script src="js/data.js"></script>
-<script src="js/waffle3d.js"></script>
 <script src="js/main.js"></script>
 <script src="js/pages.js"></script>
 </body>

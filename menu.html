@@ -11,13 +11,18 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <script>document.documentElement.classList.add("js")</script>
+  <script>(function(d){d.classList.add("js");if(!matchMedia("(prefers-reduced-motion: reduce)").matches){d.classList.add("pt");setTimeout(function(){d.classList.remove("pt")},4000)}})(document.documentElement)</script>
 </head>
 <body data-page="menu">
 <main id="main">
 
   <section class="page-hero pattern">
-    <canvas class="page-hero__canvas" data-waffle="stack" aria-hidden="true"></canvas>
+    <div class="collage" data-collage aria-hidden="true">
+      <figure class="collage__item collage__item--main" data-depth="0.5"><video autoplay muted loop playsinline preload="auto" poster="images/menu-poster.jpg" src="images/menu-decorate.mp4"></video></figure>
+      <figure class="collage__item collage__item--a" data-depth="1.2"><img src="images/brussels-berry.jpg" alt=""></figure>
+      <figure class="collage__item collage__item--b" data-depth="0.9"><img src="images/chocolat-noir.jpg" alt=""></figure>
+      <span class="collage__tag" data-depth="1.6">16 dishes · made to order</span>
+    </div>
     <div class="container">
       <span class="eyebrow" data-hero-fade>Made to order · served warm</span>
       <h1 class="display" data-hero-split>The <em>Menu</em></h1>
@@ -54,12 +59,10 @@
   </section>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 <script src="js/data.js"></script>
-<script src="js/waffle3d.js"></script>
 <script src="js/main.js"></script>
 <script src="js/pages.js"></script>
 </body>

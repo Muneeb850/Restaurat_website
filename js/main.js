@@ -60,7 +60,8 @@
       ${LINKS.map(([k, h, t]) => `<a href="${h}"><span>${t}</span></a>`).join("")}
       <div class="overlay-menu__foot">Rue des Bouchers 12, Brussels<br><a href="tel:+3225550116" style="white-space:nowrap">+32 2 555 01 16</a></div>
     </div>
-    <div class="curtain" id="curtain"><div class="curtain__word"><span>Maison Bloem</span></div></div>
+    <div class="curtain" id="curtain">${'<i class="curtain__col"></i>'.repeat(5)}<div class="curtain__word"><span>Maison Bloem</span></div></div>
+    <div class="scroll-progress" id="scrollProgress"></div>
     <div class="drawer-backdrop" id="drawerBg"></div>
     <aside class="drawer" id="drawer" aria-label="Your order" aria-hidden="true">
       <div class="drawer__head"><h3>Your order</h3><button class="drawer__close" id="drawerClose" aria-label="Close">${ICON.close}</button></div>
@@ -360,32 +361,205 @@
       });
     }
 
-    // footer giant word slides
+    // footer giant word slides, and its letters ripple up when it arrives
     const big = $(".footer__big");
-    if (big) gsap.fromTo(big, { xPercent: 8 }, { xPercent: -8, ease: "none", scrollTrigger: { trigger: big, start: "top bottom", end: "bottom top", scrub: true } });
+    if (big) {
+      gsap.fromTo(big, { xPercent: 8 }, { xPercent: -8, ease: "none", scrollTrigger: { trigger: big, start: "top bottom", end: "bottom top", scrub: true } });
+      gsap.from(splitChars(big), { yPercent: 105, duration: 1.2, ease: "expo.out", stagger: 0.035, scrollTrigger: { trigger: big, start: "top 95%", once: true } });
+    }
+
+    // section eyebrows: the little rule draws in, the label slides after it
+    $$(".eyebrow").forEach((el) => {
+      if (el.closest(".hero, .page-hero, .photo-hero, .ticket, .modal")) return;
+      gsap.from(el, { x: -24, opacity: 0, duration: 1, ease: "expo.out", scrollTrigger: { trigger: el, start: "top 92%", once: true } });
+    });
+
+    heroScroll();
+    heroTrail();
+    marqueeVelocity();
+    scrollProgress();
+    collageDepth();
   }
   MB.splitWords = splitWords;
 
   /* ---------------------------------------------------------
+     6b. Signature motion: letters, rotator, hero video, trail,
+         velocity marquee, progress bar, rolling button labels
+     --------------------------------------------------------- */
+  // split an element's text into per-letter spans, keeping words unbroken
+  function splitChars(el) {
+    if (el._chars) return el._chars;
+    const chars = [];
+    const walk = (node) => {
+      [...node.childNodes].forEach((n) => {
+        if (n.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach((part) => {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(" ")); return; }
+            const w = document.createElement("span"); w.className = "ch-word";
+            [...part].forEach((c) => { const s = document.createElement("span"); s.className = "ch"; s.textContent = c; w.appendChild(s); chars.push(s); });
+            frag.appendChild(w);
+          });
+          n.replaceWith(frag);
+        } else if (n.nodeType === 1 && n.tagName !== "BR") walk(n);
+      });
+    };
+    walk(el);
+    el._chars = chars;
+    return chars;
+  }
+  MB.splitChars = splitChars;
+
+  // the last hero line cycles through phrases, letters flipping out and in
+  let rotatorStarted = false;
+  function startRotator() {
+    const rot = $("[data-rotator]");
+    if (!rot || rotatorStarted || !hasGsap || reduced) return;
+    rotatorStarted = true;
+    const words = rot.dataset.rotator.split("|");
+    let i = 0;
+    setInterval(() => {
+      if (document.hidden) return;
+      const cur = rot.firstElementChild;
+      i = (i + 1) % words.length;
+      const next = document.createElement("span"); next.textContent = words[i]; next.className = "rotator__next";
+      rot.appendChild(next);
+      const nextChars = splitChars(next);
+      gsap.timeline({ onComplete: () => { cur.remove(); next.classList.remove("rotator__next"); } })
+        .to(splitChars(cur), { yPercent: -110, rotate: -8, duration: 0.7, ease: "expo.in", stagger: 0.02 })
+        .fromTo(nextChars, { yPercent: 110, rotate: 8 }, { yPercent: 0, rotate: 0, duration: 1, ease: "expo.out", stagger: 0.025 }, "-=0.35");
+    }, 3200);
+  }
+
+  // pick a lighter video file on small screens / data saver; keep the poster when motion is reduced
+  $$("video[data-src-lg]").forEach((v) => {
+    const small = innerWidth < 760 || (navigator.connection && navigator.connection.saveData);
+    if (reduced) { v.removeAttribute("autoplay"); v.preload = "none"; return; }
+    v.src = small ? v.dataset.srcSm : v.dataset.srcLg;
+    v.play && v.play().catch(() => {});
+  });
+  if (reduced) $$("video[autoplay]").forEach((v) => { v.removeAttribute("autoplay"); v.pause(); });
+  // pause off-screen videos to save battery
+  if ("IntersectionObserver" in window) {
+    const vio = new IntersectionObserver((es) => es.forEach((e) => { if (reduced) return; e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause(); }), { threshold: 0.05 });
+    $$("video").forEach((v) => vio.observe(v));
+  }
+
+  // as you scroll away, the full-bleed hero video shrinks into a rounded card and the type lifts off
+  function heroScroll() {
+    const hero = $(".hero--video"); if (!hero || !window.ScrollTrigger) return;
+    const tl = gsap.timeline({ scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: 0.6 } });
+    tl.fromTo(heroMedia, { clipPath: "inset(0% 0% 0% 0% round 0px)" }, { clipPath: "inset(6% 5% 22% 5% round 36px)", ease: "none" }, 0)
+      .to($("video", hero), { scale: 1.18, ease: "none" }, 0)
+      .to(".hero__content", { yPercent: -28, opacity: 0.15, ease: "none" }, 0)
+      .to(".hero__badge svg", { rotate: 220, ease: "none" }, 0);
+  }
+
+  // desktop: real dish photos trail the cursor across the hero
+  function heroTrail() {
+    const hero = $(".hero--video"), layer = $(".hero__trail");
+    if (!hero || !layer || !finePointer || !MB.MENU) return;
+    const pics = MB.MENU.filter((m) => !m.art.cup).map((m) => `images/${m.id}.jpg`);
+    pics.forEach((p) => { const im = new Image(); im.src = p; }); // warm the cache
+    let lx = 0, ly = 0, k = 0, live = 0;
+    hero.addEventListener("pointermove", (e) => {
+      if (e.target.closest("a, button") || live > 9) return;
+      const r = hero.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+      if (Math.hypot(x - lx, y - ly) < 110) return;
+      lx = x; ly = y; live++;
+      const img = document.createElement("img");
+      img.src = pics[k++ % pics.length]; img.className = "trail-img"; img.alt = "";
+      layer.appendChild(img);
+      gsap.timeline({ onComplete: () => { img.remove(); live--; } })
+        .fromTo(img, { x, y, xPercent: -50, yPercent: -50, scale: 0.3, rotate: gsap.utils.random(-14, 14), opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.5, ease: "expo.out" })
+        .to(img, { y: y + 60, scale: 0.6, opacity: 0, duration: 0.8, ease: "power2.in" }, "+=0.35");
+    });
+  }
+
+  // the word band runs faster and leans with your scroll speed
+  function marqueeVelocity() {
+    const track = $(".marquee__track"); if (!track || !window.ScrollTrigger) return;
+    track.classList.add("is-js");
+    const loop = gsap.to(track, { xPercent: -50, duration: 32, ease: "none", repeat: -1 });
+    const skew = gsap.quickTo(track, "skewX", { duration: 0.5, ease: "power3" });
+    let settle;
+    ScrollTrigger.create({ trigger: ".marquee", start: "top bottom", end: "bottom top", onUpdate: (self) => {
+      const v = gsap.utils.clamp(-3000, 3000, self.getVelocity());
+      loop.timeScale((1 + Math.abs(v) / 400) * (self.direction < 0 ? -1 : 1));
+      skew(-v / 300);
+      clearTimeout(settle);
+      settle = setTimeout(() => { gsap.to(loop, { timeScale: self.direction < 0 ? -1 : 1, duration: 1 }); skew(0); }, 120);
+    } });
+  }
+
+  // thin syrup-coloured progress line along the top of the page
+  function scrollProgress() {
+    gsap.to("#scrollProgress", { scaleX: 1, ease: "none", scrollTrigger: { trigger: document.documentElement, start: "top top", end: "bottom bottom", scrub: 0.3 } });
+  }
+
+  // collages: layers drift with the mouse and at different speeds on scroll
+  function collageDepth() {
+    $$("[data-collage]").forEach((c) => {
+      const layers = $$("[data-depth]", c);
+      layers.forEach((l) => gsap.to(l, { yPercent: -18 * parseFloat(l.dataset.depth), ease: "none",
+        scrollTrigger: { trigger: c.closest("section"), start: "top top", end: "bottom top", scrub: true } }));
+      if (!finePointer) return;
+      const movers = layers.map((l) => ({ d: parseFloat(l.dataset.depth), x: gsap.quickTo(l, "x", { duration: 0.9, ease: "power3" }), y: gsap.quickTo(l, "y", { duration: 0.9, ease: "power3" }) }));
+      c.closest("section").addEventListener("pointermove", (e) => {
+        const nx = e.clientX / innerWidth - 0.5, ny = e.clientY / innerHeight - 0.5;
+        movers.forEach((m) => { m.x(nx * 30 * m.d); m.y(ny * 22 * m.d); });
+      });
+    });
+  }
+
+  // buttons + nav links: the label rolls up to a copy of itself on hover
+  $$(".btn, .nav__links a").forEach((b) => {
+    const t = [...b.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+    if (!t) return;
+    const label = t.textContent.trim();
+    const roll = document.createElement("span");
+    roll.className = "roll"; roll.dataset.text = label;
+    roll.innerHTML = `<span>${label.replace(/</g, "&lt;")}</span>`;
+    t.replaceWith(roll, " ");
+  });
+
+  /* ---------------------------------------------------------
      7. Loader (first visit per session) + page transitions
      --------------------------------------------------------- */
-  const curtain = $("#curtain");
-  if (hasGsap) gsap.set(curtain, { y: 0, yPercent: 100 });
+  // curtain = five columns that drop in on leave and lift away on arrival
+  const curtain = $("#curtain"), cols = $$(".curtain__col", curtain), cWord = $(".curtain__word span", curtain);
+  if (hasGsap) gsap.set(cols, { scaleY: 0 });
   let firstVisit = false;
   try { firstVisit = !sessionStorage.getItem("mb-visited"); sessionStorage.setItem("mb-visited", "1"); } catch {}
 
   // hero photos start covered and wipe open with the page intro
   if (hasGsap && !reduced) $$("[data-hero-img]").forEach((el) => { gsap.set(el, { clipPath: "inset(0% 0% 0% 100%)" }); gsap.set($("img", el), { scale: 1.25 }); });
 
+  // home hero: the video opens from a rounded window, letters rise in; collages start scattered
+  const heroMedia = $("[data-hero-media]");
+  const heroChars = $$(".hero [data-chars]").flatMap((el) => splitChars(el));
+  if (hasGsap && !reduced) {
+    if (heroMedia) gsap.set(heroMedia, { clipPath: "inset(14% 10% 14% 10% round 40px)" });
+    if (heroChars.length) gsap.set(heroChars, { yPercent: 115, rotate: 10 });
+    $$("[data-collage] .collage__item, [data-collage] .collage__tag").forEach((el, i) => gsap.set(el, { y: 140, rotate: i % 2 ? 10 : -10, opacity: 0, scale: 0.85 }));
+  }
+
   function heroIntro(delay = 0) {
-    (MB.scenes || []).forEach((s) => s.intro(delay));
     if (!hasGsap || reduced) return;
+    if (heroMedia) {
+      gsap.to(heroMedia, { clipPath: "inset(0% 0% 0% 0% round 0px)", duration: 1.8, ease: "expo.inOut", delay, clearProps: "clipPath" });
+      gsap.fromTo($("video", heroMedia), { scale: 1.3 }, { scale: 1, duration: 2.6, ease: "expo.out", delay });
+    }
+    if (heroChars.length) gsap.to(heroChars, { yPercent: 0, rotate: 0, duration: 1.4, ease: "expo.out", stagger: 0.028, delay: delay + 0.55, onComplete: startRotator });
+    gsap.to("[data-collage] .collage__item, [data-collage] .collage__tag", { y: 0, rotate: (i) => [-4, 6, -7, 3][i % 4], opacity: 1, scale: 1, duration: 1.6, ease: "expo.out", stagger: 0.12, delay: delay + 0.2 });
     $$("[data-hero-img]").forEach((el) => {
       gsap.to(el, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.6, ease: "expo.inOut", delay, clearProps: "clipPath" });
       gsap.to($("img", el), { scale: 1, duration: 2.4, ease: "expo.out", delay: delay + 0.2 });
     });
     $$("[data-hero-split]").forEach((el) => {
-      gsap.from(splitWords(el), { yPercent: 120, rotate: 6, duration: 1.6, ease: "expo.out", stagger: 0.08, delay });
+      gsap.from(splitChars(el), { yPercent: 115, rotate: 10, duration: 1.4, ease: "expo.out", stagger: 0.035, delay: delay + 0.15 });
     });
     gsap.from("[data-hero-fade]", { y: 30, opacity: 0, duration: 1.2, ease: "power3.out", stagger: 0.1, delay: delay + 0.5 });
   }
@@ -404,6 +578,7 @@
         <div class="loader__bar"></div>
       </div>`);
     const L = $("#loader");
+    document.documentElement.classList.remove("pt");
     lockScroll(true);
     const circles = $$("circle", L);
     circles.forEach((c) => { const len = c.getTotalLength(); c.style.strokeDasharray = len; c.style.strokeDashoffset = len; });
@@ -438,21 +613,22 @@
   }
 
   function revealPage() {
-    gsap.set(curtain, { yPercent: 0 });
+    gsap.set(cols, { scaleY: 1, transformOrigin: "50% 0%" });
+    gsap.set(cWord, { yPercent: 0, opacity: 1 });
+    document.documentElement.classList.remove("pt");
     gsap.timeline()
-      .to(".curtain__word span", { yPercent: -40, opacity: 0, duration: 0.5, ease: "power2.in" })
-      .to(curtain, { yPercent: -100, duration: 1, ease: "expo.inOut" }, "-=0.15")
-      .add(() => heroIntro(0), "-=0.7")
-      .set(curtain, { yPercent: 100 })
-      .set(".curtain__word span", { yPercent: 0, opacity: 1 });
+      .to(cWord, { yPercent: -60, opacity: 0, duration: 0.45, ease: "power2.in" })
+      .to(cols, { scaleY: 0, duration: 0.9, ease: "expo.inOut", stagger: { each: 0.07, from: "start" } }, "-=0.1")
+      .add(() => heroIntro(0), "-=0.75");
   }
 
   function leaveTo(href) {
     if (!hasGsap || reduced) { location.href = href; return; }
     lockScroll(true);
     gsap.timeline()
-      .fromTo(curtain, { yPercent: 100 }, { yPercent: 0, duration: 0.8, ease: "expo.inOut" })
-      .fromTo(".curtain__word span", { yPercent: 60, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, "-=0.3")
+      .set(cols, { transformOrigin: "50% 100%" })
+      .fromTo(cols, { scaleY: 0 }, { scaleY: 1, duration: 0.75, ease: "expo.inOut", stagger: { each: 0.06, from: "end" } })
+      .fromTo(cWord, { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, "-=0.25")
       .add(() => (location.href = href), "+=0.05");
   }
 
@@ -470,7 +646,7 @@
 
   // returning via back button with bfcache → reset curtain
   addEventListener("pageshow", (e) => {
-    if (e.persisted && hasGsap) { gsap.set(curtain, { yPercent: 100 }); lockScroll(false); }
+    if (e.persisted && hasGsap) { gsap.set(cols, { scaleY: 0 }); gsap.set(cWord, { opacity: 0 }); lockScroll(false); }
   });
 
   /* ---------------------------------------------------------
@@ -669,8 +845,8 @@
   MB.boot = () => {
     render();
     initMotion();
-    if (!hasGsap || reduced) { heroIntro(0); return; }
-    if (firstVisit) { gsap.set(curtain, { yPercent: 100 }); runLoader(); }
+    if (!hasGsap || reduced) { document.documentElement.classList.remove("pt"); heroIntro(0); return; }
+    if (firstVisit) { gsap.set(cols, { scaleY: 0 }); gsap.set(cWord, { opacity: 0 }); runLoader(); }
     else revealPage();
   };
 })();
