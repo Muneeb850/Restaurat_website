@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reserve — Maison Bloem</title>
+  <meta name="description" content="Book a table at Maison Bloem on Rue des Bouchers, Brussels. Indoor, terrace or bar seating for 1 to 12 guests.">
+  <meta name="theme-color" content="#6e1e2b">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236e1e2b'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Georgia' font-style='italic' font-size='30' fill='%23f3ead3'%3EMB%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>document.documentElement.classList.add("js")</script>
+</head>
+<body data-page="reserve">
+<main id="main">
+
+  <section class="page-hero pattern">
+    <div class="container">
+      <span class="eyebrow" data-hero-fade>40 seats · terrace · bar</span>
+      <h1 class="display" data-hero-split>Book a <em>table</em></h1>
+      <p class="lead" data-hero-fade style="margin-top:1.6rem">Pick a day and a time and we'll keep a warm iron ready. Tables are held for 15 minutes. For parties over 12, get in touch about a private event.</p>
+    </div>
+  </section>
+
+  <section class="section section--cream" style="padding-top:clamp(3rem,6vw,5rem)">
+    <div class="container reserve">
+      <form class="panel form" id="reserveForm" novalidate data-reveal>
+        <div class="field">
+          <label for="r-date">Date</label>
+          <input id="r-date" name="date" type="date" required>
+          <span class="field__err"></span>
+        </div>
+        <div class="field">
+          <label>Guests</label>
+          <div class="stepper" id="stepper">
+            <button type="button" data-step="-" aria-label="Fewer guests">−</button>
+            <output id="guestOut" aria-live="polite">2</output>
+            <button type="button" data-step="+" aria-label="More guests">+</button>
+          </div>
+          <span class="muted" id="bigParty" hidden style="font-size:.78rem">Large party? We'll call to confirm the layout.</span>
+        </div>
+        <div class="field field--full">
+          <label>Time</label>
+          <div class="seg" id="slots"></div>
+          <input id="r-time" name="time" required class="vh-input" tabindex="-1" aria-hidden="true">
+          <span class="field__err"></span>
+        </div>
+        <div class="field field--full">
+          <label>Seating</label>
+          <div class="seg" id="seatSeg">
+            <button type="button" class="is-active" data-seat="Indoor">Indoor</button>
+            <button type="button" data-seat="Terrace">Terrace</button>
+            <button type="button" data-seat="Bar">At the bar</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="r-name">Full name</label>
+          <input id="r-name" name="name" required minlength="2" autocomplete="name">
+          <span class="field__err"></span>
+        </div>
+        <div class="field">
+          <label for="r-email">Email</label>
+          <input id="r-email" name="email" type="email" required autocomplete="email">
+          <span class="field__err"></span>
+        </div>
+        <div class="field field--full">
+          <label for="r-phone">Phone</label>
+          <input id="r-phone" name="phone" type="tel" required pattern="[+0-9 \(\)\-]{7,}" data-msg="Please enter a valid phone number." autocomplete="tel">
+          <span class="field__err"></span>
+        </div>
+        <div class="field field--full">
+          <label for="r-notes">Notes <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>
+          <textarea id="r-notes" name="notes" placeholder="Allergies, high chair, a birthday candle…"></textarea>
+          <span class="field__err"></span>
+        </div>
+        <div class="field--full">
+          <button class="btn btn--wine" type="submit">Reserve table <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </form>
+
+      <aside style="display:grid;gap:1.4rem">
+        <div class="panel panel--wine" data-reveal style="--d:.1s">
+          <span class="eyebrow">Your booking</span>
+          <ul class="summary-list">
+            <li><span>Date</span><span id="sumDate">—</span></li>
+            <li><span>Time</span><span id="sumTime">—</span></li>
+            <li><span>Party</span><span id="sumGuests">2 guests</span></li>
+            <li><span>Seating</span><span id="sumSeat">Indoor</span></li>
+          </ul>
+        </div>
+        <div class="panel panel--wine" data-reveal style="--d:.2s">
+          <span class="eyebrow">Upcoming</span>
+          <div id="bookings"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="cta pattern">
+    <div data-seal></div>
+    <div class="container">
+      <span class="eyebrow">In a hurry?</span>
+      <h2 data-split style="margin-top:1.2rem">Take it<br><em>to go</em></h2>
+      <a href="menu.html" class="btn" data-magnetic>Order ahead <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/waffle3d.js"></script>
+<script src="js/main.js"></script>
+<script src="js/pages.js"></script>
+</body>
+</html>

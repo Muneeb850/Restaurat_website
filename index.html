@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maison Bloem — Belgian Waffle House</title>
+  <meta name="description" content="Maison Bloem — Belgian warmth, baked fresh every day. Liège & Brussels waffles made to order in Brussels.">
+  <meta name="theme-color" content="#6e1e2b">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236e1e2b'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Georgia' font-style='italic' font-size='30' fill='%23f3ead3'%3EMB%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>document.documentElement.classList.add("js")</script>
+</head>
+<body data-page="home">
+<main id="main">
+
+  <!-- HERO: live 3D waffle -->
+  <section class="hero">
+    <canvas class="hero__canvas" data-waffle="hero" aria-hidden="true"></canvas>
+    <div class="container hero__content">
+      <span class="eyebrow" data-hero-fade>Belgian waffle house · Brussels</span>
+      <h1 class="hero__title" data-hero-split style="margin-top:1.4rem">Belgian <span class="italic">warmth,</span><br>baked fresh.</h1>
+      <div class="hero__row">
+        <div class="hero__meta" data-hero-fade>
+          <div><b>Est. 2016</b>Rue des Bouchers</div>
+          <div><b>48 hrs</b>Brioche dough rest</div>
+          <div><b>4.9 ★</b>2,300+ reviews</div>
+        </div>
+        <div style="display:flex;gap:.8rem;flex-wrap:wrap" data-hero-fade>
+          <a href="menu.html" class="btn" data-magnetic>Explore the menu <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a href="reserve.html" class="btn btn--ghost" data-magnetic>Book a table</a>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-cue">Scroll</div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track">
+      <span>Liège</span><span>Brussels</span><span>Speculoos</span><span>Pearl sugar</span><span>Chocolat noir</span><span>Maple butter</span>
+      <span>Liège</span><span>Brussels</span><span>Speculoos</span><span>Pearl sugar</span><span>Chocolat noir</span><span>Maple butter</span>
+    </div>
+  </div>
+
+  <!-- MANIFESTO -->
+  <section class="section section--cream">
+    <div class="container manifesto">
+      <div>
+        <span class="eyebrow">Our philosophy</span>
+        <div style="margin-top:2.5rem;color:var(--wine)"><div data-seal></div></div>
+      </div>
+      <p class="manifesto__text" data-scrub-words>
+        We bake the way our grandmothers did in Liège — slow-rested brioche, caramelised pearl sugar, and cast iron that has seen ten thousand mornings. Every waffle is made to order, served warm, and never, ever reheated.
+      </p>
+    </div>
+  </section>
+
+  <!-- SIGNATURES: pinned horizontal scroll -->
+  <section class="section section--deep" style="padding-bottom:0">
+    <div class="container section__head">
+      <div><span class="eyebrow">The signatures</span><h2 data-split>Six waffles<br>we're <em>known</em> for</h2></div>
+      <p class="lead" data-reveal>Scroll to taste through the house favourites. Add any of them to your bag for pick-up.</p>
+    </div>
+  </section>
+  <section class="hscroll section--deep" style="padding-bottom:clamp(5rem,10vw,8rem)">
+    <div class="hscroll__track" id="sigTrack" style="perspective:1200px"></div>
+  </section>
+
+  <!-- STORY TEASER -->
+  <section class="section section--cream">
+    <div class="container split">
+      <div class="frame pattern" data-reveal>
+        <div class="frame__inner" data-parallax="0.12">
+          <svg viewBox="0 0 200 200" style="width:62%" aria-hidden="true">
+            <defs><radialGradient id="fg" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#f2c56d"/><stop offset=".6" stop-color="#d99a3c"/><stop offset="1" stop-color="#a8641f"/></radialGradient>
+            <pattern id="fp" width="22" height="22" patternUnits="userSpaceOnUse" x="8" y="8"><rect x="3" y="3" width="16" height="16" rx="3" fill="#9a5418" opacity=".55"/></pattern>
+            <clipPath id="fc"><circle cx="100" cy="100" r="86"/></clipPath></defs>
+            <circle cx="100" cy="106" r="86" fill="#2a0910" opacity=".4"/>
+            <circle cx="100" cy="100" r="86" fill="url(#fg)"/>
+            <rect width="200" height="200" fill="url(#fp)" clip-path="url(#fc)"/>
+            <path d="M40 80 C70 50, 90 130, 120 90 S160 70, 170 120" fill="none" stroke="#8f3f0c" stroke-width="9" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <span class="eyebrow">Since 2016</span>
+        <h2 data-split style="margin:1rem 0 1.6rem">A little house<br>of <em>big</em> mornings</h2>
+        <p class="lead muted" data-reveal>Maison Bloem began as a single waffle iron in a Brussels market stall. Today it's a 40-seat house on Rue des Bouchers — still family-run, still pouring batter by hand.</p>
+        <a href="about.html" class="btn btn--wine" data-magnetic style="margin-top:2rem" data-reveal>Read our story <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <div class="stats" style="margin-top:3.5rem">
+          <div class="stat"><b data-count="1200" data-suffix="+">0</b><span>Waffles a day</span></div>
+          <div class="stat"><b data-count="9">0</b><span>Years of baking</span></div>
+          <div class="stat"><b data-count="16">0</b><span>On the menu</span></div>
+          <div class="stat"><b data-count="40">0</b><span>Seats inside</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAYS TO ENJOY -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <div><span class="eyebrow">Three ways</span><h2 data-split>Stay, take,<br>or <em>celebrate</em></h2></div>
+      </div>
+      <div class="values">
+        <a href="reserve.html" class="value" data-tilt data-reveal>
+          <span class="value__n">01</span>
+          <div><h3>Dine in</h3><p class="muted">Forty seats, a sunny terrace and the smell of caramel. Reserve ahead at weekends.</p></div>
+        </a>
+        <a href="menu.html" class="value" data-tilt data-reveal style="--d:.1s">
+          <span class="value__n">02</span>
+          <div><h3>Order ahead</h3><p class="muted">Build your bag online and skip the queue. Ready in about 20 minutes.</p></div>
+        </a>
+        <a href="contact.html" class="value" data-tilt data-reveal style="--d:.2s">
+          <span class="value__n">03</span>
+          <div><h3>Private events</h3><p class="muted">Waffle bars for weddings, offices and birthdays — from 20 to 200 guests.</p></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta pattern">
+    <div data-seal></div>
+    <div class="container">
+      <span class="eyebrow">Come hungry</span>
+      <h2 data-split style="margin-top:1.2rem">Your table<br>is <em>warm.</em></h2>
+      <a href="reserve.html" class="btn" data-magnetic>Reserve now <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/waffle3d.js"></script>
+<script src="js/main.js"></script>
+<script src="js/pages.js"></script>
+</body>
+</html>

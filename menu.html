@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Menu — Maison Bloem</title>
+  <meta name="description" content="Liège and Brussels waffles, savoury waffles, hot chocolate and more. Order ahead for pick-up or delivery.">
+  <meta name="theme-color" content="#6e1e2b">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236e1e2b'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='Georgia' font-style='italic' font-size='30' fill='%23f3ead3'%3EMB%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>document.documentElement.classList.add("js")</script>
+</head>
+<body data-page="menu">
+<main id="main">
+
+  <section class="page-hero pattern">
+    <canvas class="page-hero__canvas" data-waffle="stack" aria-hidden="true"></canvas>
+    <div class="container">
+      <span class="eyebrow" data-hero-fade>Made to order · served warm</span>
+      <h1 class="display" data-hero-split>The <em>Menu</em></h1>
+      <p class="lead" data-hero-fade style="margin-top:1.6rem">Sweet, savoury and everything poured over. Add dishes to your bag and pick up in about 20 minutes, or have them delivered nearby.</p>
+    </div>
+  </section>
+
+  <section class="section section--cream" style="padding-top:clamp(3rem,6vw,5rem)">
+    <div class="container">
+      <div class="filters" id="filters" role="toolbar" aria-label="Filter menu">
+        <button class="chip is-active" data-cat="all">All</button>
+        <button class="chip" data-cat="waffles">Sweet waffles</button>
+        <button class="chip" data-cat="savoury">Savoury</button>
+        <button class="chip" data-cat="drinks">Drinks</button>
+        <button class="chip" data-cat="sides">Sides</button>
+        <label class="menu-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input id="menuSearch" type="search" placeholder="Search dishes…" aria-label="Search dishes">
+        </label>
+      </div>
+      <p class="muted" id="menuCount" style="margin:-1.5rem 0 1.5rem;font-size:.85rem"></p>
+      <div class="menu-grid" id="menuGrid" style="perspective:1400px"></div>
+      <p class="muted" style="margin-top:3rem;font-size:.85rem">V vegetarian · VG vegan · GF gluten free. Gluten-free waffle batter available on request (+€1,50). Please tell us about any allergies.</p>
+    </div>
+  </section>
+
+  <section class="cta pattern">
+    <div data-seal></div>
+    <div class="container">
+      <span class="eyebrow">Rather sit down?</span>
+      <h2 data-split style="margin-top:1.2rem">Eat it <em>hot</em><br>off the iron</h2>
+      <a href="reserve.html" class="btn" data-magnetic>Book a table <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/waffle3d.js"></script>
+<script src="js/main.js"></script>
+<script src="js/pages.js"></script>
+</body>
+</html>
