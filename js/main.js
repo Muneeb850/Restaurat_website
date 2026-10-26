@@ -202,11 +202,14 @@
      4. Nav: hide on scroll down, solid after hero
      --------------------------------------------------------- */
   const nav = $("#nav");
-  let lastY = 0;
+  let lastY = 0, navPinnedUntil = 0;
+  // keep the nav (and its cart button) on screen for a moment, e.g. while an item flies into the bag
+  MB.pinNav = (ms) => { navPinnedUntil = Date.now() + ms; nav.classList.remove("is-hidden"); };
   const onScroll = () => {
     const y = window.scrollY;
     nav.classList.toggle("is-solid", y > 60);
-    if (!document.body.classList.contains("menu-open")) nav.classList.toggle("is-hidden", y > lastY && y > 300);
+    if (Date.now() < navPinnedUntil) nav.classList.remove("is-hidden");
+    else if (!document.body.classList.contains("menu-open")) nav.classList.toggle("is-hidden", y > lastY && y > 300);
     lastY = y;
   };
   addEventListener("scroll", onScroll, { passive: true });
@@ -504,21 +507,48 @@
     if (t.id === "checkoutBtn") { toggleCart(false); openCheckout(); }
   });
 
+  // the bag "catches" the item: highlight, ring pulse, +1 pop, badge bump
+  function catchInBag(n = 1) {
+    const btn = $("#cartBtn"), badge = $("#cartCount");
+    [btn, badge].forEach((el) => { el.classList.remove("is-catch", "bump"); void el.offsetWidth; });
+    btn.classList.add("is-catch"); badge.classList.add("bump");
+    const plus = document.createElement("span");
+    plus.className = "cart-plus"; plus.textContent = "+" + n;
+    btn.appendChild(plus);
+    setTimeout(() => { plus.remove(); btn.classList.remove("is-catch"); }, 1100);
+  }
+
   MB.addToCart = (id, fromEl) => {
     cart.add(id, 1);
     const item = MB.MENU.find((m) => m.id === id);
     MB.toast(`${item.name} added to your bag`);
-    const badge = $("#cartCount");
-    badge.classList.remove("bump"); void badge.offsetWidth; badge.classList.add("bump");
-    if (fromEl && hasGsap && !reduced) {
-      const a = fromEl.getBoundingClientRect(), b = $("#cartBtn").getBoundingClientRect();
-      const d = document.createElement("div"); d.className = "fly-dot"; document.body.appendChild(d);
-      gsap.set(d, { x: a.left + a.width / 2 - 8, y: a.top + a.height / 2 - 8 });
-      gsap.timeline({ onComplete: () => d.remove() })
-        .to(d, { x: b.left + b.width / 2 - 8, duration: 0.8, ease: "power1.inOut" }, 0)
-        .to(d, { y: b.top + b.height / 2 - 8, duration: 0.8, ease: "back.in(1.6)" }, 0)
-        .to(d, { scale: 0.3, duration: 0.2 }, 0.6);
-    }
+    if (!fromEl || !hasGsap || reduced) { catchInBag(); return; }
+
+    // make sure the bag is on screen (the nav hides while scrolling down)
+    const navWasHidden = nav.classList.contains("is-hidden");
+    MB.pinNav(1800);
+    const btn = $("#cartBtn");
+    const nb = nav.getBoundingClientRect(), bb = btn.getBoundingClientRect();
+    const tx = bb.left + bb.width / 2, ty = bb.top - (navWasHidden ? nb.top : 0) + bb.height / 2;
+
+    // fly the dish's own photo; fall back to a dot when the card has no image
+    const card = fromEl.closest(".dish, .sig-card");
+    const img = card && card.querySelector("img.dish-photo");
+    const src = (img || fromEl).getBoundingClientRect();
+    const size = img ? Math.min(src.width, src.height, 140) : 18;
+    const fly = document.createElement("div");
+    fly.className = "fly-thumb" + (img ? "" : " fly-thumb--dot");
+    if (img) fly.innerHTML = `<img src="${img.currentSrc || img.src}" alt="">`;
+    document.body.appendChild(fly);
+    gsap.set(fly, { width: size, height: size, x: src.left + src.width / 2 - size / 2, y: src.top + src.height / 2 - size / 2 });
+
+    const end = 34; // final size, roughly the bag icon
+    gsap.timeline({ onComplete: () => { fly.remove(); catchInBag(); } })
+      .to(fly, { scale: 1.08, duration: 0.18, ease: "power2.out" })                       // little lift-off
+      .to(fly, { x: tx - end / 2, duration: 0.85, ease: "power1.inOut" }, ">")
+      .to(fly, { y: ty - end / 2, duration: 0.85, ease: "back.in(1.4)" }, "<")             // arcs up, then drops in
+      .to(fly, { width: end, height: end, borderRadius: "50%", scale: 1, rotation: -18, duration: 0.85, ease: "power2.in" }, "<")
+      .to(fly, { scale: 0.2, opacity: 0, duration: 0.18, ease: "power2.in" }, ">-0.12");
   };
 
   function openCheckout() {

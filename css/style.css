@@ -368,8 +368,29 @@ em, .italic { font-style: italic; }
 .add-btn.is-added { background: var(--syrup); color: var(--wine-ink); }
 .empty-state { grid-column: 1 / -1; text-align: center; padding: 4rem 0; color: var(--wine); opacity: 0.7; }
 
-/* flying dot on add-to-cart */
-.fly-dot { position: fixed; z-index: 250; width: 16px; height: 16px; border-radius: 50%; background: var(--syrup); pointer-events: none; }
+/* add-to-cart: the dish photo flies into the bag, the bag catches it */
+.fly-thumb {
+  position: fixed; top: 0; left: 0; z-index: 250; pointer-events: none;
+  border-radius: 18px; overflow: hidden; background: var(--syrup);
+  box-shadow: 0 0 0 3px var(--cream), 0 24px 40px -12px rgba(0, 0, 0, 0.55);
+  will-change: transform;
+}
+.fly-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fly-thumb--dot { border-radius: 50%; box-shadow: 0 0 0 3px var(--cream); }
+#cartBtn { transition: background 0.4s, color 0.4s, transform 0.4s var(--ease-out); }
+#cartBtn.is-catch { background: var(--syrup); color: var(--wine-ink); animation: catch 0.55s var(--ease-out); }
+#cartBtn.is-catch::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(227, 176, 90, 0.75); animation: catch-ring 0.9s var(--ease-out);
+}
+@keyframes catch { 0% { transform: scale(1); } 35% { transform: scale(1.28) rotate(-8deg); } 70% { transform: scale(0.94); } 100% { transform: scale(1); } }
+@keyframes catch-ring { to { box-shadow: 0 0 0 18px rgba(227, 176, 90, 0); } }
+.cart-plus {
+  position: absolute; left: 50%; top: 100%; transform: translate(-50%, 0);
+  font-size: 0.78rem; font-weight: 800; color: var(--syrup-2); pointer-events: none;
+  animation: plus-pop 1.1s var(--ease-out) forwards;
+}
+@keyframes plus-pop { 0% { opacity: 0; transform: translate(-50%, -6px) scale(0.6); } 25% { opacity: 1; transform: translate(-50%, 4px) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, 16px) scale(1); } }
 
 /* ==========================================================
    Cart drawer
