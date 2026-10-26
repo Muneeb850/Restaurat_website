@@ -16,85 +16,150 @@
 <body data-page="reserve">
 <main id="main">
 
-  <section class="page-hero pattern">
-    <div class="container">
+  <!-- HERO: copy + photo -->
+  <section class="photo-hero">
+    <div class="photo-hero__media" data-hero-img>
+      <img src="images/interior-warm.jpg" alt="Warm, lamp-lit dining room with wooden tables" fetchpriority="high">
+    </div>
+    <div class="container photo-hero__content">
       <span class="eyebrow" data-hero-fade>40 seats · terrace · bar</span>
       <h1 class="display" data-hero-split>Book a <em>table</em></h1>
-      <p class="lead" data-hero-fade style="margin-top:1.6rem">Pick a day and a time and we'll keep a warm iron ready. Tables are held for 15 minutes. For parties over 12, get in touch about a private event.</p>
+      <p class="lead" data-hero-fade>Pick a day and a time and we'll keep a warm iron ready for you.</p>
+      <ul class="perks" data-hero-fade>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Table held 15 min</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l4 4 10-10"/></svg>Free cancellation</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 20c0-2.5 1-4.5 3-5"/></svg>Up to 12 guests</li>
+      </ul>
+      <a href="#booking" class="btn" data-magnetic data-hero-fade>Start booking <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </div>
+    <div class="photo-hero__chip" data-float aria-hidden="true"><b>Tonight</b> · terrace open</div>
   </section>
 
-  <section class="section section--cream" style="padding-top:clamp(3rem,6vw,5rem)">
+  <!-- BOOKING -->
+  <section class="section section--cream booking-section" id="booking">
     <div class="container reserve">
-      <form class="panel form" id="reserveForm" novalidate data-reveal>
-        <div class="field">
-          <label for="r-date">Date</label>
-          <input id="r-date" name="date" type="date" required>
-          <span class="field__err"></span>
-        </div>
-        <div class="field">
-          <label>Guests</label>
-          <div class="stepper" id="stepper">
-            <button type="button" data-step="-" aria-label="Fewer guests">−</button>
-            <output id="guestOut" aria-live="polite">2</output>
-            <button type="button" data-step="+" aria-label="More guests">+</button>
-          </div>
-          <span class="muted" id="bigParty" hidden style="font-size:.78rem">Large party? We'll call to confirm the layout.</span>
-        </div>
-        <div class="field field--full">
-          <label>Time</label>
-          <div class="seg" id="slots"></div>
-          <input id="r-time" name="time" required class="vh-input" tabindex="-1" aria-hidden="true">
-          <span class="field__err"></span>
-        </div>
-        <div class="field field--full">
-          <label>Seating</label>
-          <div class="seg" id="seatSeg">
-            <button type="button" class="is-active" data-seat="Indoor">Indoor</button>
-            <button type="button" data-seat="Terrace">Terrace</button>
-            <button type="button" data-seat="Bar">At the bar</button>
+      <form class="panel form booking-form" id="reserveForm" novalidate>
+
+        <div class="step field--full" data-reveal>
+          <div class="step__head"><span class="step__n">1</span><div><h3>Pick a day</h3><p class="muted">We're closed on Mondays.</p></div></div>
+          <div class="field">
+            <div class="date-strip" id="dateStrip" role="listbox" aria-label="Choose a date"></div>
+            <input id="r-date" name="date" type="date" required class="vh-input" tabindex="-1" aria-hidden="true">
+            <span class="field__err"></span>
           </div>
         </div>
-        <div class="field">
-          <label for="r-name">Full name</label>
-          <input id="r-name" name="name" required minlength="2" autocomplete="name">
-          <span class="field__err"></span>
+
+        <div class="step field--full" data-reveal>
+          <div class="step__head"><span class="step__n">2</span><div><h3>Guests &amp; time</h3><p class="muted">Times are when you arrive.</p></div></div>
+          <div class="field">
+            <label>Guests</label>
+            <div class="stepper" id="stepper">
+              <button type="button" data-step="-" aria-label="Fewer guests">−</button>
+              <output id="guestOut" aria-live="polite">2</output>
+              <button type="button" data-step="+" aria-label="More guests">+</button>
+            </div>
+            <span class="note" id="bigParty" hidden>Large party? We'll call to confirm the layout.</span>
+          </div>
+          <div class="field" style="margin-top:1.4rem">
+            <label>Time</label>
+            <div id="slots" class="slot-groups"></div>
+            <input id="r-time" name="time" required class="vh-input" tabindex="-1" aria-hidden="true">
+            <span class="field__err"></span>
+          </div>
         </div>
-        <div class="field">
-          <label for="r-email">Email</label>
-          <input id="r-email" name="email" type="email" required autocomplete="email">
-          <span class="field__err"></span>
+
+        <div class="step field--full" data-reveal>
+          <div class="step__head"><span class="step__n">3</span><div><h3>Where would you like to sit?</h3></div></div>
+          <div class="seat-cards" id="seatSeg">
+            <button type="button" class="seat-card is-active" data-seat="Indoor" aria-pressed="true">
+              <span class="seat-card__img"><img src="images/interior-warm.jpg" alt="" loading="lazy"></span>
+              <span class="seat-card__txt"><b>Indoor</b><small>Cosy, by the irons</small></span>
+            </button>
+            <button type="button" class="seat-card" data-seat="Terrace" aria-pressed="false">
+              <span class="seat-card__img"><img src="images/terrace.jpg" alt="" loading="lazy"></span>
+              <span class="seat-card__txt"><b>Terrace</b><small>Sunny courtyard</small></span>
+            </button>
+            <button type="button" class="seat-card" data-seat="Bar" aria-pressed="false">
+              <span class="seat-card__img"><img src="images/bar.jpg" alt="" loading="lazy"></span>
+              <span class="seat-card__txt"><b>At the bar</b><small>Watch us bake</small></span>
+            </button>
+          </div>
         </div>
-        <div class="field field--full">
-          <label for="r-phone">Phone</label>
-          <input id="r-phone" name="phone" type="tel" required pattern="[+0-9 \(\)\-]{7,}" data-msg="Please enter a valid phone number." autocomplete="tel">
-          <span class="field__err"></span>
+
+        <div class="step field--full" data-reveal>
+          <div class="step__head"><span class="step__n">4</span><div><h3>Your details</h3></div></div>
+          <div class="form form--inner">
+            <div class="field">
+              <label for="r-name">Full name</label>
+              <input id="r-name" name="name" required minlength="2" autocomplete="name" placeholder="Élise Martin">
+              <span class="field__err"></span>
+            </div>
+            <div class="field">
+              <label for="r-email">Email</label>
+              <input id="r-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+              <span class="field__err"></span>
+            </div>
+            <div class="field field--full">
+              <label for="r-phone">Phone</label>
+              <input id="r-phone" name="phone" type="tel" required pattern="[+0-9 \(\)\-]{7,}" data-msg="Please enter a valid phone number." autocomplete="tel" placeholder="+32 …">
+              <span class="field__err"></span>
+            </div>
+            <div class="field field--full">
+              <label for="r-notes">Notes <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>
+              <textarea id="r-notes" name="notes" placeholder="Allergies, high chair, a birthday candle…"></textarea>
+              <span class="field__err"></span>
+            </div>
+          </div>
         </div>
-        <div class="field field--full">
-          <label for="r-notes">Notes <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>
-          <textarea id="r-notes" name="notes" placeholder="Allergies, high chair, a birthday candle…"></textarea>
-          <span class="field__err"></span>
-        </div>
-        <div class="field--full">
+
+        <div class="field--full booking-form__submit">
           <button class="btn btn--wine" type="submit">Reserve table <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          <span class="muted">No payment needed.</span>
         </div>
       </form>
 
-      <aside style="display:grid;gap:1.4rem">
-        <div class="panel panel--wine" data-reveal style="--d:.1s">
-          <span class="eyebrow">Your booking</span>
-          <ul class="summary-list">
-            <li><span>Date</span><span id="sumDate">—</span></li>
-            <li><span>Time</span><span id="sumTime">—</span></li>
-            <li><span>Party</span><span id="sumGuests">2 guests</span></li>
-            <li><span>Seating</span><span id="sumSeat">Indoor</span></li>
-          </ul>
+      <aside class="booking-aside">
+        <div class="ticket" data-reveal style="--d:.1s">
+          <div class="ticket__img"><img src="images/interior-arch.jpg" alt="" loading="lazy"><span class="ticket__brand">Maison Bloem</span></div>
+          <div class="ticket__body">
+            <span class="eyebrow">Your booking</span>
+            <ul class="summary-list">
+              <li><span>Date</span><span id="sumDate">—</span></li>
+              <li><span>Time</span><span id="sumTime">—</span></li>
+              <li><span>Party</span><span id="sumGuests">2 guests</span></li>
+              <li><span>Seating</span><span id="sumSeat">Indoor</span></li>
+            </ul>
+          </div>
+          <div class="ticket__foot"><span>Rue des Bouchers 12</span><span>Brussels</span></div>
         </div>
-        <div class="panel panel--wine" data-reveal style="--d:.2s">
+        <div class="panel panel--wine upcoming" data-reveal style="--d:.2s">
           <span class="eyebrow">Upcoming</span>
           <div id="bookings"></div>
         </div>
       </aside>
+    </div>
+  </section>
+
+  <!-- GOOD TO KNOW -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head">
+        <div><span class="eyebrow">Good to know</span><h2 data-split>Before you<br><em>arrive</em></h2></div>
+      </div>
+      <div class="info-cards" data-stagger>
+        <div class="info-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <h3>Opening hours</h3><p class="muted">Tue–Fri 08:00–21:00 (Fri till 22:00)<br>Sat–Sun 09:00–22:00 · Mon closed</p>
+        </div>
+        <div class="info-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <h3>Getting here</h3><p class="muted">Two minutes from the Grand-Place. Metro Gare Centrale, then a short walk.</p>
+        </div>
+        <a class="info-card" href="contact.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h16v10H4zM12 10v10M4 14h16"/><path d="M12 10c-2-4-6-4-6-1.5S9 10 12 10zM12 10c2-4 6-4 6-1.5S15 10 12 10z"/></svg>
+          <h3>Bigger party?</h3><p class="muted">Private room for 18, waffle bars for up to 200. Tell us about it →</p>
+        </a>
+      </div>
     </div>
   </section>
 

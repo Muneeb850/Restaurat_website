@@ -110,19 +110,46 @@
 
     let guests = 2, seating = "Indoor";
 
-    function buildSlots() {
+    // date strip: the next 30 days as tappable cards; closed days (and a fully past today) are disabled
+    const strip = $("#dateStrip");
+    const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const days = [];
+    for (let k = 0; k < 30; k++) { const d = new Date(today); d.setDate(today.getDate() + k); days.push(d); }
+    strip.innerHTML = days.map((d) => {
+      const h = HOURS[d.getDay()], v = iso(d);
+      const off = !h || (v === iso(today) && v !== iso(first));
+      const label = v === iso(today) ? "Today" : DAYS[d.getDay()].slice(0, 3);
+      return `<button type="button" class="day" role="option" data-date="${v}" ${off ? "disabled" : ""} aria-label="${d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}${off ? " (closed)" : ""}">
+        <small>${label}</small><b>${d.getDate()}</b><small>${h ? MON[d.getMonth()] : "Closed"}</small></button>`;
+    }).join("");
+    function markDay(scroll) {
+      $$(".day", strip).forEach((b) => { const on = b.dataset.date === dateIn.value; b.classList.toggle("is-active", on); b.setAttribute("aria-selected", on); });
+      const cur = $(".day.is-active", strip);
+      if (cur && scroll) strip.scrollTo({ left: cur.offsetLeft - strip.clientWidth / 2 + cur.offsetWidth / 2, behavior: "smooth" });
+    }
+    strip.addEventListener("click", (e) => {
+      const b = e.target.closest(".day:not([disabled])"); if (!b) return;
+      dateIn.value = b.dataset.date;
+      const f = dateIn.closest(".field"); f.classList.remove("has-error"); $(".field__err", f).textContent = "";
+      markDay(true); buildSlots(true);
+    });
+
+    function buildSlots(animate) {
       const d = dateIn.value ? new Date(dateIn.value + "T00:00") : null;
       timeIn.value = "";
       if (!d) { slotsEl.innerHTML = ""; return summary(); }
       const h = HOURS[d.getDay()];
       if (!h) { slotsEl.innerHTML = `<p class="muted" style="margin:0">We're closed on ${DAYS[d.getDay()]}s — please pick another day.</p>`; return summary(); }
       const isToday = iso(d) === iso(new Date()), nowH = new Date().getHours() + new Date().getMinutes() / 60;
-      let html = "";
+      // group the half-hour slots into morning / afternoon / evening
+      const groups = [["Morning", []], ["Afternoon", []], ["Evening", []]];
       for (let t = h[0]; t <= h[1] - 1.5; t += 0.5) {
         const past = isToday && t <= nowH + 0.5;
-        html += `<button type="button" data-time="${fmtH(t)}" ${past ? "disabled" : ""}>${fmtH(t)}</button>`;
+        groups[t < 12 ? 0 : t < 17 ? 1 : 2][1].push(`<button type="button" data-time="${fmtH(t)}" ${past ? "disabled" : ""}>${fmtH(t)}</button>`);
       }
+      const html = groups.filter(([, b]) => b.length).map(([n, b]) => `<div class="slot-group"><span class="slot-group__label">${n}</span><div class="seg">${b.join("")}</div></div>`).join("");
       slotsEl.innerHTML = html || `<p class="muted" style="margin:0">No more tables today — try tomorrow.</p>`;
+      if (animate && hasGsap && !reduced) gsap.from($$("button", slotsEl), { y: 14, opacity: 0, duration: 0.5, ease: "power3.out", stagger: 0.012, clearProps: "all" });
       summary();
     }
     slotsEl.addEventListener("click", (e) => {
@@ -132,7 +159,7 @@
       const f = timeIn.closest(".field"); f.classList.remove("has-error"); $(".field__err", f).textContent = "";
       summary();
     });
-    dateIn.addEventListener("change", buildSlots);
+    dateIn.addEventListener("change", () => { markDay(true); buildSlots(true); });
 
     const out = $("#guestOut");
     $("#stepper").addEventListener("click", (e) => {
@@ -142,19 +169,29 @@
       $("#bigParty").hidden = guests < 9;
       summary();
     });
+    function setSeat(b) {
+      seating = b.dataset.seat;
+      $$("#seatSeg button").forEach((x) => { x.classList.toggle("is-active", x === b); x.setAttribute("aria-pressed", x === b); });
+    }
     $("#seatSeg").addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return;
-      seating = b.dataset.seat;
-      $$("#seatSeg button").forEach((x) => x.classList.toggle("is-active", x === b));
+      setSeat(b);
       summary();
     });
 
+    // ticket values flash when they change
+    function put(sel, v) {
+      const el = $(sel);
+      if (el.textContent === v) return;
+      el.textContent = v;
+      el.classList.remove("is-flash"); void el.offsetWidth; el.classList.add("is-flash");
+    }
     function summary() {
       const d = dateIn.value ? new Date(dateIn.value + "T00:00") : null;
-      $("#sumDate").textContent = d ? d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) : "—";
-      $("#sumTime").textContent = timeIn.value || "—";
-      $("#sumGuests").textContent = guests + (guests === 1 ? " guest" : " guests");
-      $("#sumSeat").textContent = seating;
+      put("#sumDate", d ? d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) : "—");
+      put("#sumTime", timeIn.value || "—");
+      put("#sumGuests", guests + (guests === 1 ? " guest" : " guests"));
+      put("#sumSeat", seating);
     }
 
     function drawBookings() {
@@ -189,9 +226,11 @@
         `See you ${d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} at ${booking.time}, ${MB.escapeHTML(booking.name.split(" ")[0])}. A table for ${guests} (${seating.toLowerCase()}) is held for 15 minutes.`));
       MB.drawCheck();
       form.reset(); guests = 2; out.textContent = 2; $("#bigParty").hidden = true;
-      dateIn.value = iso(first); buildSlots(); drawBookings();
+      setSeat($("#seatSeg [data-seat=Indoor]"));
+      dateIn.value = iso(first); markDay(true); buildSlots(); drawBookings();
     });
 
+    markDay(false);
     buildSlots();
     drawBookings();
   }
@@ -213,6 +252,15 @@
     $("#hoursList").innerHTML = order.map((d) => `<li class="${d === day ? "is-today" : ""}"><span>${DAYS[d]}</span><span>${HOURS[d] ? fmtH(HOURS[d][0]) + " – " + fmtH(HOURS[d][1]) : "Closed"}</span></li>`).join("");
 
     const form = $("#contactForm");
+    // topic chips drive the (visually hidden) required select
+    const chips = $("#topicChips");
+    const pickTopic = (t) => {
+      form.topic.value = t;
+      $$("button", chips).forEach((b) => b.classList.toggle("is-active", b.dataset.topic === t));
+      const f = form.topic.closest(".field"); if (t) { f.classList.remove("has-error"); $(".field__err", f).textContent = ""; }
+    };
+    chips.addEventListener("click", (e) => { const b = e.target.closest("button[data-topic]"); if (b) pickTopic(b.dataset.topic); });
+    form.addEventListener("reset", () => setTimeout(() => pickTopic(""), 0));
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       if (!MB.validate(form)) return;

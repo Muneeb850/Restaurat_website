@@ -315,6 +315,26 @@
         scrollTrigger: { trigger: el.parentElement, start: "top bottom", end: "bottom top", scrub: true } });
     });
 
+    // photos unveil upward as they scroll in, with the image settling from a slight zoom
+    $$("[data-img-reveal]").forEach((el) => {
+      const img = $("img", el);
+      const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: "top 88%", once: true } });
+      tl.fromTo(el, { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.4, ease: "expo.out", clearProps: "clipPath" });
+      if (img && !img.closest("[data-parallax]") && !img.hasAttribute("data-parallax-img")) tl.fromTo(img, { scale: 1.3 }, { scale: 1, duration: 1.8, ease: "expo.out", clearProps: "transform" }, 0);
+    });
+
+    // images drift inside their frame while scrolling
+    $$("[data-parallax-img]").forEach((img) => {
+      gsap.fromTo(img, { yPercent: -8 }, { yPercent: 8, ease: "none",
+        scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: true } });
+    });
+
+    // groups of cards rise in one after another
+    $$("[data-stagger]").forEach((wrap) => {
+      gsap.from(wrap.children, { y: 60, opacity: 0, duration: 1.1, ease: "expo.out", stagger: 0.12,
+        scrollTrigger: { trigger: wrap, start: "top 88%", once: true }, clearProps: "transform,opacity" });
+    });
+
     $$("[data-count]").forEach((el) => {
       const end = parseFloat(el.dataset.count), o = { v: 0 };
       gsap.to(o, { v: end, duration: 2, ease: "power2.out",
@@ -354,9 +374,16 @@
   let firstVisit = false;
   try { firstVisit = !sessionStorage.getItem("mb-visited"); sessionStorage.setItem("mb-visited", "1"); } catch {}
 
+  // hero photos start covered and wipe open with the page intro
+  if (hasGsap && !reduced) $$("[data-hero-img]").forEach((el) => { gsap.set(el, { clipPath: "inset(0% 0% 0% 100%)" }); gsap.set($("img", el), { scale: 1.25 }); });
+
   function heroIntro(delay = 0) {
     (MB.scenes || []).forEach((s) => s.intro(delay));
     if (!hasGsap || reduced) return;
+    $$("[data-hero-img]").forEach((el) => {
+      gsap.to(el, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.6, ease: "expo.inOut", delay, clearProps: "clipPath" });
+      gsap.to($("img", el), { scale: 1, duration: 2.4, ease: "expo.out", delay: delay + 0.2 });
+    });
     $$("[data-hero-split]").forEach((el) => {
       gsap.from(splitWords(el), { yPercent: 120, rotate: 6, duration: 1.6, ease: "expo.out", stagger: 0.08, delay });
     });
