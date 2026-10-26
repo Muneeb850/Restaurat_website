@@ -196,8 +196,9 @@
       camera.aspect = w / h; camera.updateProjectionMatrix();
       const narrow = w / h < 1;
       state.baseX = variant === "hero" ? (narrow ? 0 : 2.1) : 0;
-      state.baseY = variant === "hero" ? (narrow ? 1.4 : 0.6) : 0;
-      state.baseS = narrow ? 0.72 : 1;
+      // phones: smaller and higher so it sits above the headline instead of over it
+      state.baseY = variant === "hero" ? (narrow ? 1.75 : 0.6) : 0;
+      state.baseS = narrow ? (variant === "hero" ? 0.6 : 0.72) : 1;
     }
 
     function frame() {

@@ -44,7 +44,7 @@
   ];
 
   document.body.insertAdjacentHTML("afterbegin", `
-    <a href="#main" class="sr-skip" style="position:absolute;left:-9999px">Skip to content</a>
+    <a href="#main" class="sr-skip">Skip to content</a>
     <header class="nav" id="nav">
       <a href="index.html" class="nav__logo" aria-label="Maison Bloem home">Maison Bloem<small>Belgian waffle house</small></a>
       <nav class="nav__links" aria-label="Primary">
@@ -58,7 +58,7 @@
     </header>
     <div class="overlay-menu" id="overlayMenu">
       ${LINKS.map(([k, h, t]) => `<a href="${h}"><span>${t}</span></a>`).join("")}
-      <div class="overlay-menu__foot">Rue des Bouchers 12, Brussels · +32 2 555 01 16</div>
+      <div class="overlay-menu__foot">Rue des Bouchers 12, Brussels<br><a href="tel:+3225550116" style="white-space:nowrap">+32 2 555 01 16</a></div>
     </div>
     <div class="curtain" id="curtain"><div class="curtain__word"><span>Maison Bloem</span></div></div>
     <div class="drawer-backdrop" id="drawerBg"></div>
@@ -130,7 +130,15 @@
       if (err) err.textContent = msg;
       if (msg && !firstBad) firstBad = el;
     });
-    if (firstBad) firstBad.focus({ preventScroll: false });
+    if (firstBad) {
+      // bring the error into view (Lenis-aware), then focus — except the button-driven hidden input,
+      // which would only pop up the phone keyboard
+      const field = firstBad.closest(".field");
+      const inModal = !!firstBad.closest(".modal");
+      if (lenis && !inModal) lenis.scrollTo(field, { offset: -120 });
+      else field.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (!firstBad.classList.contains("vh-input")) firstBad.focus({ preventScroll: true });
+    }
     return !firstBad;
   };
   document.addEventListener("input", (e) => {
@@ -534,7 +542,7 @@
         <div class="field"><label for="co-phone">Phone</label><input id="co-phone" name="phone" type="tel" required pattern="[+0-9 \\(\\)\\-]{7,}" data-msg="Please enter a valid phone number." autocomplete="tel"><span class="field__err"></span></div>
         <div class="field" id="addrField" hidden><label for="co-addr">Delivery address</label><input id="co-addr" name="address" required minlength="6" autocomplete="street-address"><span class="field__err"></span></div>
         <div class="field"><label for="co-time">Time</label><select id="co-time" name="time" required>
-          ${slots.length ? `<option value="asap">As soon as possible</option>${slots.map((s) => `<option>${s}</option>`).join("")}` : `<option value="">We're closed right now — please order during opening hours</option>`}</select><span class="field__err"></span></div>
+          ${slots.length ? `<option value="asap">As soon as possible</option>${slots.map((s) => `<option>${s}</option>`).join("")}` : `<option value="">Closed now — see opening hours</option>`}</select><span class="field__err"></span></div>
         <div class="drawer__row drawer__row--total" style="margin-top:.4rem"><span>Total</span><span id="coTotal">${MB.money(cart.subtotal())}</span></div>
         <button class="btn btn--wine" type="submit" style="justify-content:center">Place order ${ICON.arrow}</button>
       </form>`);

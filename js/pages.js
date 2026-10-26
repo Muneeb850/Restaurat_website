@@ -201,7 +201,13 @@
     const now = new Date(), day = now.getDay(), h = HOURS[day], nowH = now.getHours() + now.getMinutes() / 60;
     const open = h && nowH >= h[0] && nowH < h[1];
     const st = $("#openStatus");
-    st.textContent = open ? `Open now · until ${fmtH(h[1])}` : "Closed now";
+    let next = "";
+    if (!open) {
+      // next opening: later today, or the first open day after
+      if (h && nowH < h[0]) next = ` · opens ${fmtH(h[0])}`;
+      else for (let k = 1; k <= 7; k++) { const d = (day + k) % 7; if (HOURS[d]) { next = ` · opens ${k === 1 ? "tomorrow" : DAYS[d]} ${fmtH(HOURS[d][0])}`; break; } }
+    }
+    st.textContent = open ? `Open now · until ${fmtH(h[1])}` : `Closed now${next}`;
     st.classList.toggle("is-closed", !open);
     const order = [1, 2, 3, 4, 5, 6, 0];
     $("#hoursList").innerHTML = order.map((d) => `<li class="${d === day ? "is-today" : ""}"><span>${DAYS[d]}</span><span>${HOURS[d] ? fmtH(HOURS[d][0]) + " – " + fmtH(HOURS[d][1]) : "Closed"}</span></li>`).join("");
