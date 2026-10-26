@@ -156,6 +156,20 @@ html.pt::after { content: ""; position: fixed; inset: 0; z-index: 189; backgroun
 .btn:hover .roll > span, .btn:hover .roll::after, .btn:focus-visible .roll > span, .btn:focus-visible .roll::after,
 .nav__links a:hover .roll > span, .nav__links a:hover .roll::after { transform: translateY(-100%); }
 
+/* touch: labels roll on tap / on arrival; cards press in when tapped */
+.btn.is-rolling .roll > span, .btn.is-rolling .roll::after { transform: translateY(-100%); }
+@media (hover: none) {
+  .dish, .value, .seat-card, .contact-card, .info-card, .gallery__item, .day { transition: transform 0.35s var(--ease-out), box-shadow 0.35s, background 0.3s, color 0.3s; }
+  .dish:active, .value:active, .seat-card:active, .contact-card:active, .info-card:active, .gallery__item:active { transform: scale(0.97); }
+  .day:active:not([disabled]) { transform: scale(0.94); }
+  .btn:active, .add-btn:active, .chip:active { transform: scale(0.95); }
+}
+
+/* autoplay blocked (Low Power Mode etc.): the still frame slowly drifts instead */
+.hero__media.is-still { animation: kenburns 16s ease-in-out infinite alternate; }
+.collage__item.is-still video { animation: kenburns 12s ease-in-out infinite alternate; }
+@keyframes kenburns { from { transform: scale(1) translate(0, 0); } to { transform: scale(1.14) translate(-2%, -2%); } }
+
 /* per-letter split (hero titles mask their letters) */
 [data-hero-split] { overflow: hidden; padding: 0.05em 0 0.14em; margin-bottom: -0.14em; }
 .ch-word { display: inline-block; white-space: nowrap; }
@@ -844,6 +858,7 @@ a.info-card:hover svg { color: var(--wine); }
   .tl-row { grid-template-columns: 1fr; gap: 0.6rem; }
   .hero__badge { top: calc(var(--nav-h) + 1rem); right: 1rem; width: 84px; }
   .hero__note { display: none; }
+  .trail-img { width: 108px; border-radius: 12px; }
   .page-hero:has(.collage) { flex-direction: column; align-items: stretch; min-height: 0; }
   .page-hero:has(.collage) > .container { order: -1; }
   .collage { position: relative; right: auto; top: auto; bottom: auto; width: auto; height: 300px; margin: 2.2rem var(--gutter) 0; }

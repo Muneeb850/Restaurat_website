@@ -456,26 +456,49 @@
       .to(".hero__badge svg", { rotate: 220, ease: "none" }, 0);
   }
 
-  // desktop: real dish photos trail the cursor across the hero
+  // real dish photos in the hero: they trail the cursor on desktop; on touch screens
+  // they pop up on their own around the headline, and wherever you tap
   function heroTrail() {
     const hero = $(".hero--video"), layer = $(".hero__trail");
-    if (!hero || !layer || !finePointer || !MB.MENU) return;
+    if (!hero || !layer || !MB.MENU) return;
     const pics = MB.MENU.filter((m) => !m.art.cup).map((m) => `images/${m.id}.jpg`);
     pics.forEach((p) => { const im = new Image(); im.src = p; }); // warm the cache
-    let lx = 0, ly = 0, k = 0, live = 0;
-    hero.addEventListener("pointermove", (e) => {
-      if (e.target.closest("a, button") || live > 9) return;
-      const r = hero.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-      if (Math.hypot(x - lx, y - ly) < 110) return;
-      lx = x; ly = y; live++;
+    let k = 0, live = 0;
+    const spawn = (x, y, hold = 0.35) => {
+      if (live > 9) return;
+      live++;
       const img = document.createElement("img");
       img.src = pics[k++ % pics.length]; img.className = "trail-img"; img.alt = "";
       layer.appendChild(img);
       gsap.timeline({ onComplete: () => { img.remove(); live--; } })
         .fromTo(img, { x, y, xPercent: -50, yPercent: -50, scale: 0.3, rotate: gsap.utils.random(-14, 14), opacity: 0 },
           { scale: 1, opacity: 1, duration: 0.5, ease: "expo.out" })
-        .to(img, { y: y + 60, scale: 0.6, opacity: 0, duration: 0.8, ease: "power2.in" }, "+=0.35");
+        .to(img, { y: y + 60, scale: 0.6, opacity: 0, duration: 0.8, ease: "power2.in" }, "+=" + hold);
+    };
+
+    if (finePointer) {
+      let lx = 0, ly = 0;
+      hero.addEventListener("pointermove", (e) => {
+        if (e.target.closest("a, button")) return;
+        const r = hero.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+        if (Math.hypot(x - lx, y - ly) < 110) return;
+        lx = x; ly = y; spawn(x, y);
+      });
+      return;
+    }
+    // touch: a tap drops a photo, and photos drift in by themselves while the hero is on screen
+    hero.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("a, button")) return;
+      const r = hero.getBoundingClientRect();
+      spawn(e.clientX - r.left, e.clientY - r.top, 0.6);
     });
+    let onScreen = true;
+    if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => (onScreen = e.isIntersecting), { threshold: 0.4 }).observe(hero);
+    setTimeout(() => setInterval(() => {
+      if (!onScreen || document.hidden) return;
+      const r = hero.getBoundingClientRect();
+      spawn(r.width * gsap.utils.random(0.2, 0.8), r.height * gsap.utils.random(0.16, 0.42), 0.9);
+    }, 1500), 2600);
   }
 
   // the word band runs faster and leans with your scroll speed
@@ -505,7 +528,18 @@
       const layers = $$("[data-depth]", c);
       layers.forEach((l) => gsap.to(l, { yPercent: -18 * parseFloat(l.dataset.depth), ease: "none",
         scrollTrigger: { trigger: c.closest("section"), start: "top top", end: "bottom top", scrub: true } }));
-      if (!finePointer) return;
+      if (!finePointer) {
+        // touch: layers float gently once they've landed, and lean with the phone where tilt is available
+        layers.forEach((l, i) => gsap.to(l, { y: "+=" + (8 + i * 4), rotation: "+=" + (i % 2 ? 1.5 : -1.5), duration: 2.6 + i * 0.5,
+          ease: "sine.inOut", yoyo: true, repeat: -1, delay: 3.2 }));
+        const tilt = layers.map((l) => ({ d: parseFloat(l.dataset.depth), x: gsap.quickTo(l, "xPercent", { duration: 1, ease: "power3" }) }));
+        addEventListener("deviceorientation", (e) => {
+          if (e.gamma == null) return;
+          const g = gsap.utils.clamp(-25, 25, e.gamma) / 25;
+          tilt.forEach((t) => t.x(g * 4 * t.d));
+        });
+        return;
+      }
       const movers = layers.map((l) => ({ d: parseFloat(l.dataset.depth), x: gsap.quickTo(l, "x", { duration: 0.9, ease: "power3" }), y: gsap.quickTo(l, "y", { duration: 0.9, ease: "power3" }) }));
       c.closest("section").addEventListener("pointermove", (e) => {
         const nx = e.clientX / innerWidth - 0.5, ny = e.clientY / innerHeight - 0.5;
@@ -523,6 +557,41 @@
     roll.className = "roll"; roll.dataset.text = label;
     roll.innerHTML = `<span>${label.replace(/</g, "&lt;")}</span>`;
     t.replaceWith(roll, " ");
+  });
+  // touch screens have no hover: labels roll when tapped, and once as each button scrolls into view
+  if (!finePointer && !reduced) {
+    const rollOnce = (b) => { b.classList.remove("is-rolling"); void b.offsetWidth; b.classList.add("is-rolling"); setTimeout(() => b.classList.remove("is-rolling"), 900); };
+    document.addEventListener("pointerdown", (e) => { const b = e.target.closest(".btn"); if (b && $(".roll", b)) rollOnce(b); });
+    // started from MB.boot once the page intro has played, so the first roll isn't hidden under the curtain
+    MB.watchRolls = () => {
+      if (!("IntersectionObserver" in window)) return;
+      const rio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { setTimeout(() => rollOnce(e.target), 400); rio.unobserve(e.target); } }), { threshold: 1 });
+      $$(".btn").forEach((b) => $(".roll", b) && rio.observe(b));
+    };
+  }
+
+  // phones: the signature cards grow as they reach the middle of the swipe row
+  const sigTrack = $(".hscroll__track");
+  if (sigTrack && !reduced && matchMedia("(max-width: 600px)").matches) {
+    let raf = 0;
+    const focus = () => {
+      raf = 0;
+      const mid = innerWidth / 2;
+      $$(".sig-card", sigTrack).forEach((c) => {
+        const r = c.getBoundingClientRect(), d = Math.min(1, Math.abs(r.left + r.width / 2 - mid) / innerWidth);
+        c.style.transform = `scale(${1 - d * 0.12}) rotate(${(r.left + r.width / 2 - mid) / innerWidth * 4}deg)`;
+        c.style.opacity = 1 - d * 0.35;
+      });
+    };
+    sigTrack.addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(focus); }, { passive: true });
+    setTimeout(focus, 300);
+  }
+
+  // if the browser blocks autoplay (iPhone Low Power Mode, data saver), keep the still frame moving
+  $$(".hero__video, .collage video").forEach((v) => {
+    const still = () => v.closest(".hero__media, .collage__item")?.classList.add("is-still");
+    v.addEventListener("play", () => v.closest(".hero__media, .collage__item")?.classList.remove("is-still"));
+    setTimeout(() => { if (!reduced && v.paused && v.currentTime === 0) still(); }, 2500);
   });
 
   /* ---------------------------------------------------------
@@ -846,6 +915,7 @@
     render();
     initMotion();
     if (!hasGsap || reduced) { document.documentElement.classList.remove("pt"); heroIntro(0); return; }
+    if (MB.watchRolls) setTimeout(MB.watchRolls, firstVisit ? 5200 : 2400);
     if (firstVisit) { gsap.set(cols, { scaleY: 0 }); gsap.set(cWord, { opacity: 0 }); runLoader(); }
     else revealPage();
   };
