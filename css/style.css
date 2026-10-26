@@ -833,6 +833,129 @@ a.info-card:hover svg { color: var(--wine); }
   .sig-card { scroll-snap-align: center; }
 }
 
+/* ==========================================================
+   Phones: a tighter scale — smaller type, spacing and media.
+   Kept last so it wins over the earlier rules; desktop untouched.
+   ========================================================== */
+@media (max-width: 600px) {
+  html { font-size: 15px; }
+  body { font-size: 15px; }
+
+  /* type */
+  .display { font-size: clamp(2.6rem, 12.5vw, 3.4rem); }
+  h2 { font-size: clamp(2rem, 9vw, 2.5rem); }
+  h3 { font-size: 1.4rem; }
+  .lead { font-size: 1rem; }
+  .eyebrow { font-size: 0.68rem; letter-spacing: 0.18em; }
+  .hero__title { font-size: clamp(2.9rem, 14vw, 3.6rem); }
+  .hero__meta { gap: 1.1rem; font-size: 0.68rem; }
+  .hero__meta b { font-size: 1.2rem; }
+  .manifesto__text { font-size: 1.5rem; }
+  .price { font-size: 1.35rem; }
+  .stat b { font-size: 2.3rem; }
+  .stat { padding-top: 1.2rem; }
+  .tl-row { padding: 1.3rem 0; }
+  .tl-row b { font-size: 1.9rem; }
+  .value__n { font-size: 2.6rem; }
+  .faq__q { font-size: 1.15rem; padding: 1.1rem 0; }
+  .faq__icon { width: 32px; height: 32px; }
+  .btn { padding: 0.95em 1.45em; font-size: 0.78rem; }
+
+  /* spacing */
+  .section { padding: 3.4rem 0; }
+  .section__head { margin-bottom: 2rem; gap: 1rem; }
+  .page-hero { padding: calc(var(--nav-h) + 2.6rem) 0 2.4rem; }
+  .page-hero .lead { margin-top: 1rem !important; }
+  .hero { padding-bottom: 1.6rem; }
+  .hero__row { margin-top: 1.2rem; gap: 1.2rem; }
+  .manifesto { gap: 1.6rem; }
+  .split { gap: 2rem; }
+  .panel { padding: 1.3rem; border-radius: 20px; }
+  .filters { margin-bottom: 2rem; }
+
+  /* call-to-action banners + seal */
+  .cta { padding: 4rem 0; }
+  .cta h2 { font-size: clamp(2.4rem, 11vw, 3rem); }
+  .cta .btn { margin-top: 1.6rem; }
+  .seal { width: 118px; }
+  .cta .seal { margin-bottom: 1.4rem; }
+
+  /* marquee + signature cards + menu cards */
+  .marquee { padding: 0.9rem 0; }
+  .marquee__track span { font-size: 1.6rem; gap: 2rem; }
+  .marquee__track { gap: 2rem; }
+  .sig-card { width: 72vw; border-radius: 18px; }
+  .sig-card__body { padding: 1rem 1.1rem 1.2rem; }
+  .dish { border-radius: 18px; }
+  .dish__media { aspect-ratio: 16 / 11; }
+  .dish__body { padding: 1rem 1.1rem 1.1rem; gap: 0.45rem; }
+
+  /* photo frames, cards, team, bands */
+  .frame { aspect-ratio: 16 / 11; border-radius: 20px; }
+  .frame__badge { right: 0.8rem; bottom: 0.8rem; padding: 0.6rem 0.85rem; font-size: 0.72rem; }
+  .frame__badge b { font-size: 1.05rem; }
+  .value__img { aspect-ratio: 16 / 9; }
+  .value--photo > div { padding: 0 1.3rem 1.4rem; }
+  .value--photo .value__n { width: 3.4rem; height: 3.4rem; font-size: 1.7rem; margin: -1.7rem 0 0 1.1rem; }
+  .member__img { aspect-ratio: 16 / 11; border-radius: 18px; }
+  .member__img--photo span { font-size: 2.2rem; }
+  .member h3 { margin-top: 0.7rem; }
+  .team { gap: 1.8rem; }
+  .image-band { min-height: 52svh; }
+  .image-band__quote p { font-size: 2rem; }
+  .info-card { padding: 1.4rem; border-radius: 18px; }
+  .info-card svg { width: 28px; height: 28px; }
+
+  /* reserve */
+  .photo-hero .display { font-size: clamp(2.6rem, 12.5vw, 3.3rem); margin: 0.9rem 0 1rem; }
+  .photo-hero:not(.photo-hero--full) .photo-hero__media { height: 40vh; min-height: 250px; border-radius: 0 0 28px 28px; }
+  .photo-hero:not(.photo-hero--full) .photo-hero__content { margin-top: -4rem; }
+  .photo-hero .lead { margin-bottom: 1.2rem; }
+  .perks { margin-bottom: 1.4rem; gap: 0.45rem; }
+  .perks li { font-size: 0.72rem; padding: 0.5em 0.85em; }
+  .step__head { gap: 0.75rem; margin-bottom: 1rem; }
+  .step__head h3 { font-size: 1.3rem; }
+  .step__n { width: 34px; height: 34px; font-size: 1.1rem; }
+  .day { width: 62px; padding: 0.6rem 0 0.55rem; border-radius: 14px; }
+  .day b { font-size: 1.55rem; }
+  .day small { font-size: 0.66rem; }
+  .seat-card { border-radius: 16px; }
+  .seat-card__img { width: 92px; }
+  .seat-card__txt b { font-size: 1.15rem; }
+  .ticket { border-radius: 20px; }
+  .ticket__img { aspect-ratio: 16 / 7; }
+  .ticket__brand { font-size: 1.4rem; left: 1.2rem; }
+  .ticket__body { padding: 1rem 1.2rem 1.1rem; }
+  .ticket__foot { padding: 0.85rem 1.2rem 1rem; font-size: 0.66rem; }
+  .summary-list li { padding: 0.7rem 0; font-size: 0.86rem; }
+
+  /* contact */
+  .photo-hero--full { min-height: 76svh; }
+  .photo-hero--full .photo-hero__content { padding-bottom: 4.2rem; }
+  .quick-actions { gap: 0.5rem; }
+  .contact-cards-wrap { margin-top: -2.6rem; }
+  .contact-card { border-radius: 18px; padding: 1rem 1.1rem; }
+  .contact-card__icon { width: 40px; height: 40px; border-radius: 12px; }
+  .contact-card__icon svg { width: 20px; height: 20px; }
+  .contact-card p { font-size: 1.1rem; }
+  .contact-main { padding-top: 3rem; }
+  .hours-card { border-radius: 20px; }
+  .hours-card__body { padding: 1.2rem 1.3rem 1.4rem; }
+  .hours li { padding: 0.45rem 0; font-size: 0.86rem; }
+  .contact-form__title { font-size: 1.8rem; }
+  .map { aspect-ratio: 4 / 5; border-radius: 20px; }
+  .gallery { gap: 0.8rem; }
+  .gallery__item { height: 190px; border-radius: 18px; }
+
+  /* chrome */
+  .nav__logo { font-size: 1.35rem; }
+  .overlay-menu a { font-size: clamp(2.4rem, 11vw, 3rem); }
+  .footer { padding: 3rem 0 1.6rem; }
+  .footer__grid { gap: 1.6rem; }
+  .footer__big { font-size: 4.4rem; margin-top: 2.2rem; }
+  .drawer__head h3 { font-size: 1.5rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
   .js [data-reveal] { opacity: 1; transform: none; }
