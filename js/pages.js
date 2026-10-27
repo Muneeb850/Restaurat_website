@@ -37,6 +37,13 @@
       </article>`;
     }).join("") + `<a href="menu.html" class="sig-card" style="display:grid;place-items:center;background:var(--cream);color:var(--wine);min-height:100%">
         <div style="text-align:center;padding:2rem"><h2 style="font-size:4rem"><em>Full</em><br>menu</h2><p class="muted" style="margin-top:1rem">16 dishes & drinks →</p></div></a>`;
+
+    // photo strips: every dish, split across two rows (each row doubled so it never runs out)
+    const tile = (m) => `<a class="strip__tile" href="menu.html?cat=${m.cat}"><img src="images/${m.id}.jpg" alt="${m.name}" loading="lazy"><span>${m.name}</span></a>`;
+    const half = Math.ceil(MB.MENU.length / 2);
+    const rowA = MB.MENU.slice(0, half), rowB = MB.MENU.slice(half);
+    $("#stripA").innerHTML = [...rowA, ...rowA].map(tile).join("");
+    $("#stripB").innerHTML = [...rowB, ...rowB].map(tile).join("");
   }
 
   /* ---------------- MENU ---------------- */
@@ -46,11 +53,10 @@
     let cat = params.get("cat") || "all", q = "";
     if (cat !== "all" && !MB.MENU.some((m) => m.cat === cat)) cat = "all";
 
-    function draw(animate) {
-      const list = MB.MENU.filter((m) => (cat === "all" || m.cat === cat) &&
-        (!q || (m.name + " " + m.desc).toLowerCase().includes(q)));
-      grid.innerHTML = list.length ? list.map((m) => `
-        <article class="dish" data-tilt>
+    // every dish is built once; filtering only shows/hides cards, and Flip glides the survivors
+    // into their new places while leavers shrink away and newcomers pop in
+    grid.innerHTML = MB.MENU.map((m) => `
+        <article class="dish" data-tilt data-id="${m.id}" data-flip-id="${m.id}">
           <div class="dish__media ${m.cat === "drinks" ? "" : "pattern"}" style="${m.cat === "drinks" ? "background:var(--wine-deep)" : ""}">
             ${m.badge ? `<span class="dish__tag">${m.badge}</span>` : ""}${MB.photoFor(m)}</div>
           <div class="dish__body">
@@ -59,16 +65,37 @@
             <div class="dish__foot"><div class="diet">${m.diet.map((d) => `<span title="${{ V: "Vegetarian", VG: "Vegan", GF: "Gluten free" }[d]}">${d}</span>`).join("")}</div>
               <button class="add-btn" data-add="${m.id}" aria-label="Add ${m.name} to bag">+ <span>Add</span></button></div>
           </div>
-        </article>`).join("")
-        : `<div class="empty-state"><h3><em>No waffles match “${MB.escapeHTML(q)}”</em></h3><p>Try another word or category.</p></div>`;
-      $("#menuCount").textContent = `${list.length} ${list.length === 1 ? "item" : "items"}`;
-      MB.bindInteractions(grid);
-      if (animate && hasGsap && !reduced) {
-        gsap.fromTo($$(".dish", grid), { y: 60, opacity: 0, rotateX: -12 },
-          { y: 0, opacity: 1, rotateX: 0, duration: 0.9, ease: "expo.out", stagger: 0.05, clearProps: "opacity" });
-      }
-      if (window.ScrollTrigger) ScrollTrigger.refresh();
+        </article>`).join("") + `<div class="empty-state" hidden><h3><em></em></h3><p>Try another word or category.</p></div>`;
+    const cards = $$(".dish", grid), empty = $(".empty-state", grid);
+    const canFlip = hasGsap && !reduced && window.Flip;
+    if (canFlip) gsap.registerPlugin(Flip);
+
+    function draw(animate) {
+      const show = new Set(MB.MENU.filter((m) => (cat === "all" || m.cat === cat) &&
+        (!q || (m.name + " " + m.desc).toLowerCase().includes(q))).map((m) => m.id));
+      const state = animate && canFlip ? Flip.getState(cards) : null;
+      // hold the grid's height while cards are in flight, so the page below doesn't jump
+      const before = grid.offsetHeight;
+      if (state) grid.style.minHeight = before + "px";
+      cards.forEach((c) => (c.hidden = !show.has(c.dataset.id)));
+      empty.hidden = show.size > 0;
+      $("em", empty).textContent = `No waffles match “${q}”`;
+      $("#menuCount").textContent = `${show.size} ${show.size === 1 ? "item" : "items"}`;
+      if (state) {
+        Flip.from(state, { duration: 0.75, ease: "expo.inOut", stagger: 0.025, absolute: true, scale: true,
+          onEnter: (els) => gsap.fromTo(els, { opacity: 0, scale: 0.7, rotate: -4 }, { opacity: 1, scale: 1, rotate: 0, duration: 0.7, ease: "back.out(1.6)", stagger: 0.04 }),
+          onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.7, rotate: 4, duration: 0.45, ease: "power2.in" }),
+          onComplete: () => {
+            // then ease the grid to its new natural height
+            grid.style.minHeight = "";
+            const after = grid.offsetHeight;
+            gsap.fromTo(grid, { height: before }, { height: after, duration: 0.5, ease: "power3.inOut", clearProps: "height",
+              onComplete: () => window.ScrollTrigger && ScrollTrigger.refresh() });
+          } });
+        if (!empty.hidden) gsap.from(empty, { y: 30, opacity: 0, duration: 0.6, ease: "power3.out" });
+      } else if (window.ScrollTrigger) ScrollTrigger.refresh();
     }
+    MB.bindInteractions(grid);
 
     $$(".chip[data-cat]").forEach((c) => c.classList.toggle("is-active", c.dataset.cat === cat));
     $("#filters").addEventListener("click", (e) => {
@@ -86,10 +113,13 @@
       tmr = setTimeout(() => { q = e.target.value.trim().toLowerCase(); draw(true); }, 180);
     });
     draw(false);
-    // first reveal when the grid scrolls in
+    // first reveal: each card rises in as it scrolls into view, its photo unveiling upward
     if (hasGsap && !reduced && window.ScrollTrigger) {
-      gsap.from($$(".dish", grid), { y: 80, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.06,
-        scrollTrigger: { trigger: grid, start: "top 85%", once: true }, clearProps: "opacity,transform" });
+      ScrollTrigger.batch(cards.filter((c) => !c.hidden), { start: "top 90%", once: true, onEnter: (batch) => {
+        gsap.from(batch, { y: 80, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.08, clearProps: "opacity,transform" });
+        gsap.from(batch.map((c) => $(".dish__media", c)), { clipPath: "inset(100% 0% 0% 0%)", duration: 1.2, ease: "expo.out", stagger: 0.08, clearProps: "clipPath" });
+        gsap.from(batch.map((c) => $(".dish-photo", c)).filter(Boolean), { scale: 1.35, duration: 1.6, ease: "expo.out", stagger: 0.08, clearProps: "transform" });
+      } });
     }
   }
 

@@ -301,6 +301,13 @@
       const words = splitWords(el);
       gsap.from(words, { yPercent: 115, rotate: 4, duration: 1.2, ease: "expo.out", stagger: 0.05,
         scrollTrigger: { trigger: el, start: "top 88%", once: true } });
+      // the italic word gets a hand-drawn syrup swash that draws itself in after the words land
+      $$("em", el).forEach((em) => {
+        em.insertAdjacentHTML("beforeend", `<svg class="swash" viewBox="0 0 200 24" preserveAspectRatio="none" aria-hidden="true"><path d="M3 15 C 40 5, 72 22, 104 12 S 168 4, 197 13"/></svg>`);
+        const p = $("path", em), len = p.getTotalLength();
+        gsap.fromTo(p, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut", delay: 0.6,
+          scrollTrigger: { trigger: el, start: "top 88%", once: true } });
+      });
     });
 
     // manifesto: words fill in as you scroll (scrubbed)
@@ -379,6 +386,49 @@
     marqueeVelocity();
     scrollProgress();
     collageDepth();
+    photoStrips();
+    timelineMotion();
+    sealVelocity();
+  }
+
+  // home: two rows of dish photos slide in opposite directions with the scroll
+  function photoStrips() {
+    $$("[data-strip]").forEach((s) => {
+      const row = $(".strip__row", s), dir = +s.dataset.strip;
+      gsap.fromTo(row, { xPercent: dir < 0 ? 0 : -25 }, { xPercent: dir < 0 ? -25 : 0, ease: "none",
+        scrollTrigger: { trigger: s, start: "top bottom", end: "bottom top", scrub: 0.5 } });
+      gsap.from($$(".strip__tile", row), { y: 60, opacity: 0, rotate: dir * 3, duration: 1, ease: "expo.out", stagger: 0.04,
+        scrollTrigger: { trigger: s, start: "top 92%", once: true }, clearProps: "opacity" });
+    });
+  }
+
+  // about: a syrup line fills down the timeline as you read; each year counts up as its row arrives
+  function timelineMotion() {
+    const tl = $("[data-timeline]"); if (!tl) return;
+    gsap.fromTo($(".timeline__bar", tl), { scaleY: 0 }, { scaleY: 1, ease: "none",
+      scrollTrigger: { trigger: tl, start: "top 70%", end: "bottom 60%", scrub: 0.4 } });
+    $$(".tl-row", tl).forEach((row) => {
+      const b = $("b", row), year = parseInt(b.textContent, 10), o = { v: year - 8 };
+      ScrollTrigger.create({ trigger: row, start: "top 72%", once: true, onEnter: () => {
+        row.classList.add("is-lit");
+        gsap.to(o, { v: year, duration: 1.1, ease: "power3.out", onUpdate: () => (b.textContent = Math.round(o.v)) });
+        gsap.from($$("h3, p", row), { x: 40, opacity: 0, duration: 0.9, ease: "expo.out", stagger: 0.08 });
+      } });
+    });
+  }
+
+  // the round seals spin faster while you scroll, then ease back
+  function sealVelocity() {
+    const rings = $$(".seal__ring"); if (!rings.length) return;
+    rings.forEach((r) => (r.style.animation = "none"));
+    const spins = rings.map((r) => gsap.to(r, { rotation: 360, duration: 22, ease: "none", repeat: -1, transformOrigin: "50% 50%" }));
+    let settle;
+    ScrollTrigger.create({ start: 0, end: "max", onUpdate: (self) => {
+      const v = Math.min(Math.abs(self.getVelocity()) / 120, 14);
+      spins.forEach((s) => s.timeScale((1 + v) * (self.direction < 0 ? -1 : 1)));
+      clearTimeout(settle);
+      settle = setTimeout(() => spins.forEach((s) => gsap.to(s, { timeScale: 1, duration: 1.2 })), 140);
+    } });
   }
   MB.splitWords = splitWords;
 
@@ -739,6 +789,11 @@
     drawer.setAttribute("aria-hidden", !open);
     lockScroll(open);
     if (open) setTimeout(() => $("#drawerClose").focus(), 300);
+    // items slide in one after another as the drawer opens
+    if (open && hasGsap && !reduced) {
+      gsap.from($$(".cart-item, .cart-empty > *", drawer), { x: 60, opacity: 0, duration: 0.8, ease: "expo.out", stagger: 0.07, delay: 0.25, clearProps: "transform,opacity" });
+      gsap.from($$(".drawer__foot > *", drawer), { y: 30, opacity: 0, duration: 0.7, ease: "expo.out", stagger: 0.06, delay: 0.4, clearProps: "transform,opacity" });
+    }
   }
   MB.toggleCart = toggleCart;
   $("#cartBtn").addEventListener("click", () => toggleCart(true));
@@ -747,6 +802,9 @@
 
   function render() {
     const n = cart.count(), badge = $("#cartCount");
+    // the number flips over when it changes
+    if (hasGsap && !reduced && badge.textContent !== String(n) && badge.textContent !== "0")
+      gsap.fromTo(badge, { rotationX: -90 }, { rotationX: 0, duration: 0.5, ease: "back.out(2)" });
     badge.textContent = n;
     badge.classList.toggle("has-items", n > 0);
     const lines = cart.lines();
@@ -889,7 +947,50 @@
       gsap.fromTo(p, { strokeDasharray: len, strokeDashoffset: len }, { strokeDashoffset: 0, duration: 0.9, delay: i * 0.4, ease: "power2.out" });
     });
     gsap.from(".success > *:not(svg)", { y: 20, opacity: 0, stagger: 0.08, duration: 0.8, delay: 0.3, ease: "power3.out" });
+    if (!reduced) setTimeout(() => MB.confetti($(".success__check")), 850);
   };
+
+  // pearl-sugar confetti: bursts out of an element, arcs up, then falls and fades
+  MB.confetti = (from) => {
+    if (!hasGsap || reduced || !from) return;
+    const r = from.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const layer = document.createElement("div"); layer.className = "confetti"; document.body.appendChild(layer);
+    const colors = ["#fffaf0", "#f3ead3", "#e3b05a", "#c98a2b", "#8a2f3e"];
+    for (let i = 0; i < 46; i++) {
+      const p = document.createElement("i");
+      const s = gsap.utils.random(5, 11);
+      p.style.cssText = `width:${s}px;height:${s * gsap.utils.random(0.7, 1.3)}px;background:${colors[i % colors.length]};border-radius:${i % 3 ? "2px" : "50%"}`;
+      layer.appendChild(p);
+      const a = gsap.utils.random(-Math.PI, 0), v = gsap.utils.random(120, 320);
+      gsap.set(p, { x: cx, y: cy, xPercent: -50, yPercent: -50 });
+      gsap.timeline()
+        .to(p, { x: cx + Math.cos(a) * v, y: cy + Math.sin(a) * v, rotation: gsap.utils.random(-360, 360), duration: 0.9, ease: "power3.out" })
+        .to(p, { y: `+=${gsap.utils.random(160, 320)}`, x: `+=${gsap.utils.random(-40, 40)}`, opacity: 0, rotation: `+=${gsap.utils.random(-180, 180)}`, duration: 1.3, ease: "power1.in" }, "-=0.2");
+    }
+    setTimeout(() => layer.remove(), 2600);
+  };
+
+  // cards: on desktop a soft light follows the cursor; on touch a ripple spreads from your tap
+  const GLOW = ".dish, .value, .info-card, .contact-card, .seat-card, .sig-card, .gallery__item, .strip__tile";
+  if (!reduced) {
+    if (finePointer) {
+      document.addEventListener("pointermove", (e) => {
+        const c = e.target.closest(GLOW); if (!c) return;
+        const r = c.getBoundingClientRect();
+        c.style.setProperty("--gx", `${e.clientX - r.left}px`);
+        c.style.setProperty("--gy", `${e.clientY - r.top}px`);
+      }, { passive: true });
+    } else {
+      document.addEventListener("pointerdown", (e) => {
+        const c = e.target.closest(GLOW); if (!c) return;
+        const r = c.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2;
+        const rip = document.createElement("span"); rip.className = "tap-ripple";
+        rip.style.cssText = `left:${e.clientX - r.left}px;top:${e.clientY - r.top}px;width:${d}px;height:${d}px`;
+        c.appendChild(rip);
+        setTimeout(() => rip.remove(), 800);
+      }, { passive: true });
+    }
+  }
 
   // cross-tab sync
   addEventListener("storage", (e) => { if (e.key === "mb-cart") { cart.items = store.get("mb-cart", {}); render(); } });
